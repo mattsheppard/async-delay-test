@@ -24,31 +24,7 @@ public class DelayFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         HttpServletRequest httpRequest = ((HttpServletRequest)request);
 
-        delayResponeFor(httpRequest, response, chain);
-    }
-
-    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-
-    private void delayResponeFor(final HttpServletRequest request, final ServletResponse response,
-        FilterChain chain) throws IOException, ServletException {
-
-        if (request.getAttribute("delayComplete") == null) {
-            final AsyncContext asyncContext = getAsyncContext(request, response);
-            asyncContext.addListener(new DispatchOnTimeoutListener());
-            asyncContext.setTimeout(5000);
-//            asyncContext.dispatch();
-
-//            scheduler.schedule(new Runnable() {
-//                public void run() {
-//                    asyncContext.getRequest().setAttribute("delayComplete", Boolean.TRUE);
-//                    asyncContext.dispatch();
-//                }
-//            }, 5, TimeUnit.SECONDS);
-
-
-        } else {
-            chain.doFilter(request, response);
-        }
+        delayResponeWithAListener(httpRequest, response, chain);
     }
 
     public static AsyncContext getAsyncContext(ServletRequest request, ServletResponse response) {
@@ -60,6 +36,19 @@ public class DelayFilter implements Filter {
             asyncContext = request.startAsync(request, response);
         }
         return asyncContext;
+    }
+
+    private void delayResponeWithAListener(final HttpServletRequest request, final ServletResponse response,
+        FilterChain chain) throws IOException, ServletException {
+
+        if (request.getAttribute("delayComplete") == null) {
+            final AsyncContext asyncContext = getAsyncContext(request, response);
+            asyncContext.addListener(new DispatchOnTimeoutListener());
+            asyncContext.setTimeout(5000);
+//            asyncContext.dispatch();
+        } else {
+            chain.doFilter(request, response);
+        }
     }
 
     private class DispatchOnTimeoutListener implements AsyncListener
@@ -83,6 +72,27 @@ public class DelayFilter implements Filter {
             System.out.println("onError");
         }
     }
+
+
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+
+    private void delayResponeWithAQueue(final HttpServletRequest request, final ServletResponse response,
+        FilterChain chain) throws IOException, ServletException {
+
+        if (request.getAttribute("delayComplete") == null) {
+            final AsyncContext asyncContext = getAsyncContext(request, response);
+
+            scheduler.schedule(new Runnable() {
+                public void run() {
+                    asyncContext.getRequest().setAttribute("delayComplete", Boolean.TRUE);
+                    asyncContext.dispatch();
+                }
+            }, 5, TimeUnit.SECONDS);
+        } else {
+            chain.doFilter(request, response);
+        }
+    }
+
 
     public void destroy() {
         //we can close resources here

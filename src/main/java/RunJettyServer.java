@@ -23,9 +23,6 @@ public class RunJettyServer {
         connector.setPort(8080);
         server.setConnectors(new Connector[]{connector});
 
-        // TODO - Not sure if this is actually the same as threads
-        server.addBean(new ConnectionLimit(1,server));
-
         final WebAppContext context = new WebAppContext();
         context.setContextPath("/");
         context.setResourceBase(new File("src/main/webapp").getAbsolutePath());

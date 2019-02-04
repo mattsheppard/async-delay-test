@@ -13,7 +13,12 @@
 
     <servlet-mapping>
         <servlet-name>hello</servlet-name>
-        <url-pattern>/</url-pattern>
+        <url-pattern>/hello</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>hello</servlet-name>
+        <url-pattern>/delayed-hello</url-pattern>
     </servlet-mapping>
 
     <filter>
@@ -24,7 +29,7 @@
 
     <filter-mapping>
         <filter-name>DelayFilter</filter-name>
-        <url-pattern>/*</url-pattern>
+        <url-pattern>/delayed-hello</url-pattern>
     </filter-mapping>
 
 </web-app>
