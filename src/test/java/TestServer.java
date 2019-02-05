@@ -30,7 +30,7 @@ public class TestServer {
 
             ExecutorService executor = Executors.newFixedThreadPool(concurrentThreads);
 
-            for (int i = 0; i < 1000; i++) {
+            for (int i = 0; i < 30; i++) {
                 executor.submit(new Runnable() {
                     public void run() {
                         try {

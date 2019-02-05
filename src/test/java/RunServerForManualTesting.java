@@ -9,6 +9,8 @@ public class RunServerForManualTesting {
 
         server.dumpStdErr();
 
+        System.out.println("Try running\n    curl http://127.0.0.1:8080/delayed-hello");
+
         server.join();
     }
 }

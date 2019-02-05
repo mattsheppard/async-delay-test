@@ -24,7 +24,7 @@ public class DelayFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         HttpServletRequest httpRequest = ((HttpServletRequest)request);
 
-        delayResponeWithAQueue(httpRequest, response, chain);
+        delayWithASeparateThread(httpRequest, response, chain);
     }
 
     public static AsyncContext getAsyncContext(ServletRequest request, ServletResponse response) {
@@ -61,7 +61,15 @@ public class DelayFilter implements Filter {
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
-                asyncContext.complete();
+
+                try {
+                    chain.doFilter(request, response);
+                    asyncContext.complete();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                } catch (ServletException e) {
+                    throw new RuntimeException(e);
+                }
             }
         });
     }
