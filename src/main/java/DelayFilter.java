@@ -38,6 +38,17 @@ public class DelayFilter implements Filter {
         return asyncContext;
     }
 
+    private void delayWithASimpleSleep(final HttpServletRequest request, final ServletResponse response,
+                                          FilterChain chain) throws IOException, ServletException {
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        chain.doFilter(request, response);
+    }
+
     private void delayWithASeparateThread(final HttpServletRequest request, final ServletResponse response,
                                       FilterChain chain) throws IOException, ServletException {
         final AsyncContext asyncContext = request.startAsync();
@@ -52,7 +63,8 @@ public class DelayFilter implements Filter {
                 }
                 asyncContext.complete();
             }
-        });    }
+        });
+    }
 
     private void delayResponseWithAListener(final HttpServletRequest request, final ServletResponse response,
                                             FilterChain chain) throws IOException, ServletException {
