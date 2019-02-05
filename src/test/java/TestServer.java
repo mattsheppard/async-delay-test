@@ -7,6 +7,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class TestServer {
 
@@ -24,36 +25,23 @@ public class TestServer {
         // we should find a way to make sure that each user can only have one
         // pending request each
 
-        ExecutorService executor = Executors.newFixedThreadPool(10);
+        for (int concurrentThreads = 1; concurrentThreads < 11; concurrentThreads++) {
+            final AtomicInteger counter = new AtomicInteger(0);
 
-        for (int i = 0 ; i < 1000 ; i++) {
-            executor.submit(new Runnable() {
-                public void run() {
-                    try {
-                        String result = new String(new URL("http://127.0.0.1:8080/hello").openStream().readAllBytes(), StandardCharsets.UTF_8);
+            ExecutorService executor = Executors.newFixedThreadPool(concurrentThreads);
 
-                        if (!result.equals("Hello, world!\n")) {
-                            System.err.println("UNDELAYED: Unexpectedly got " + result);
-                        } else {
-                            System.out.println("UNDELAYED: Success");
-                        }
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            });
-
-            if (i % 10 == 0) {
+            for (int i = 0; i < 1000; i++) {
                 executor.submit(new Runnable() {
                     public void run() {
                         try {
                             String result = new String(new URL("http://127.0.0.1:8080/delayed-hello").openStream().readAllBytes(),
-                                StandardCharsets.UTF_8);
+                                    StandardCharsets.UTF_8);
 
                             if (!result.equals("Hello, world!\n")) {
                                 System.err.println("DELAYED: Unexpectedly got " + result);
                             } else {
-                                System.out.println("DELAYED: Success");
+//                                System.out.println("DELAYED: Success");
+                                counter.incrementAndGet();
                             }
                         } catch (IOException e) {
                             throw new RuntimeException(e);
@@ -62,10 +50,10 @@ public class TestServer {
                 });
             }
 
+            executor.awaitTermination(10, TimeUnit.SECONDS);
+
+            System.out.println("Client Threads: " + concurrentThreads + " - Got " + counter.get() + " responses in 10 secs.");
         }
-
-        executor.awaitTermination(30, TimeUnit.SECONDS);
-
         server.stop();
     }
 

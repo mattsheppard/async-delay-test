@@ -24,7 +24,7 @@ public class DelayFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         HttpServletRequest httpRequest = ((HttpServletRequest)request);
 
-        delayResponeWithAListener(httpRequest, response, chain);
+        delayResponeWithAQueue(httpRequest, response, chain);
     }
 
     public static AsyncContext getAsyncContext(ServletRequest request, ServletResponse response) {
@@ -38,13 +38,29 @@ public class DelayFilter implements Filter {
         return asyncContext;
     }
 
-    private void delayResponeWithAListener(final HttpServletRequest request, final ServletResponse response,
-        FilterChain chain) throws IOException, ServletException {
+    private void delayWithASeparateThread(final HttpServletRequest request, final ServletResponse response,
+                                      FilterChain chain) throws IOException, ServletException {
+        final AsyncContext asyncContext = request.startAsync();
+
+        asyncContext.start(new Runnable() {
+            @ Override
+            public void run() {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                asyncContext.complete();
+            }
+        });    }
+
+    private void delayResponseWithAListener(final HttpServletRequest request, final ServletResponse response,
+                                            FilterChain chain) throws IOException, ServletException {
 
         if (request.getAttribute("delayComplete") == null) {
             final AsyncContext asyncContext = getAsyncContext(request, response);
             asyncContext.addListener(new DispatchOnTimeoutListener());
-            asyncContext.setTimeout(5000);
+            asyncContext.setTimeout(1000);
 //            asyncContext.dispatch();
         } else {
             chain.doFilter(request, response);
@@ -55,11 +71,11 @@ public class DelayFilter implements Filter {
     {
         public void onStartAsync(AsyncEvent event) throws IOException
         {
-            System.out.println("onStartAsync");
+//            System.out.println("onStartAsync");
         }
         public void onComplete(AsyncEvent event) throws IOException
         {
-            System.out.println("onComplete");
+//            System.out.println("onComplete");
         }
         public void onTimeout(AsyncEvent event) throws IOException
         {
@@ -87,7 +103,7 @@ public class DelayFilter implements Filter {
                     asyncContext.getRequest().setAttribute("delayComplete", Boolean.TRUE);
                     asyncContext.dispatch();
                 }
-            }, 5, TimeUnit.SECONDS);
+            }, 1, TimeUnit.SECONDS);
         } else {
             chain.doFilter(request, response);
         }

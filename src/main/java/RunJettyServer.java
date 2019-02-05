@@ -14,8 +14,8 @@ public class RunJettyServer {
 
     public static Server runServer() throws Exception
     {
-        LinkedBlockingQueue<Runnable> queue = new LinkedBlockingQueue<Runnable>(4);
-        QueuedThreadPool threadPool = new QueuedThreadPool(4, 4, 100, queue);
+        LinkedBlockingQueue<Runnable> queue = new LinkedBlockingQueue<Runnable>(5);
+        QueuedThreadPool threadPool = new QueuedThreadPool(5, 5, 100, queue);
 
         final Server server = new Server(threadPool);
 
