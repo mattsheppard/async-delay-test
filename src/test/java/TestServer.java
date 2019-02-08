@@ -41,8 +41,7 @@ public class TestServer {
 
                             if (endTime - startTime < 1000) {
                                 System.err.println("Got an undelayed response after " + (endTime - startTime) + "ms");
-                            }
-                            if (!result.equals("Hello, world!\n")) {
+                            } else if (!result.equals("Hello, world!\n")) {
                                 System.err.println("DELAYED: Unexpectedly got " + result);
                             } else {
 //                                System.out.println("DELAYED: Success");
