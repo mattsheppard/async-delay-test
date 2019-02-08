@@ -26,7 +26,7 @@ public class DelayFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         HttpServletRequest httpRequest = ((HttpServletRequest)request);
 
-        noDelay(httpRequest, response, chain);
+        delayAsInStackOverflowAnswer(httpRequest, response, chain);
     }
 
     private void noDelay(final HttpServletRequest request, final ServletResponse response,
