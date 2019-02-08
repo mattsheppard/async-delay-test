@@ -1,4 +1,6 @@
 import java.io.IOException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -24,7 +26,18 @@ public class DelayFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         HttpServletRequest httpRequest = ((HttpServletRequest)request);
 
-        delayWithASeparateThread(httpRequest, response, chain);
+        noDelay(httpRequest, response, chain);
+    }
+
+    private void noDelay(final HttpServletRequest request, final ServletResponse response,
+                                       FilterChain chain) throws IOException, ServletException {
+        chain.doFilter(request, response);
+    }
+
+    // Like https://github.com/yourarj/spring-security-prevent-brute-force/blob/master/src/main/java/mr/awesome/spring/springsecuritydemoone/filter/AttemptFilter.java
+    private void delayAsInStackOverflowAnswer(ServletRequest request, ServletResponse response, FilterChain chain) {
+        AsyncContext asyncContext = request.startAsync();
+        asyncContext.setTimeout(1000);
     }
 
     public static AsyncContext getAsyncContext(ServletRequest request, ServletResponse response) {

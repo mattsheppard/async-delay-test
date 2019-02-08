@@ -16,11 +16,11 @@ public class TestServer {
         Server server = RunJettyServer.runServer();
 
 
-        // Run lots of requests - 1,000 over 100 threads.
+        // Run lots of requests over multiple threads.
         //
         // What should we expect to happen?
         //
-        // I guess ideally we should come up with a way to have Jetty accept all 1,000
+        // I guess ideally we should come up with a way to have Jetty accept all requests
         // very quickly and respond to them all 5 seconds later...And then once that works
         // we should find a way to make sure that each user can only have one
         // pending request each
@@ -30,13 +30,18 @@ public class TestServer {
 
             ExecutorService executor = Executors.newFixedThreadPool(concurrentThreads);
 
-            for (int i = 0; i < 30; i++) {
+            for (int i = 0; i < 300; i++) {
                 executor.submit(new Runnable() {
                     public void run() {
                         try {
+                            long startTime = System.currentTimeMillis();
                             String result = new String(new URL("http://127.0.0.1:8080/delayed-hello").openStream().readAllBytes(),
                                     StandardCharsets.UTF_8);
+                            long endTime = System.currentTimeMillis();
 
+                            if (endTime - startTime < 1000) {
+                                System.err.println("Got an undelayed response after " + (endTime - startTime) + "ms");
+                            }
                             if (!result.equals("Hello, world!\n")) {
                                 System.err.println("DELAYED: Unexpectedly got " + result);
                             } else {
