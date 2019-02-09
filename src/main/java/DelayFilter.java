@@ -27,6 +27,7 @@ public class DelayFilter implements Filter {
         HttpServletRequest httpRequest = ((HttpServletRequest)request);
 
         delayAsInStackOverflowAnswer(httpRequest, response, chain);
+
     }
 
     private void noDelay(final HttpServletRequest request, final ServletResponse response,
@@ -35,9 +36,11 @@ public class DelayFilter implements Filter {
     }
 
     // Like https://github.com/yourarj/spring-security-prevent-brute-force/blob/master/src/main/java/mr/awesome/spring/springsecuritydemoone/filter/AttemptFilter.java
-    private void delayAsInStackOverflowAnswer(ServletRequest request, ServletResponse response, FilterChain chain) {
+    private void delayAsInStackOverflowAnswer(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         AsyncContext asyncContext = request.startAsync();
         asyncContext.setTimeout(1000);
+        //This is what you missed again
+        chain.doFilter(request,response);
     }
 
     public static AsyncContext getAsyncContext(ServletRequest request, ServletResponse response) {
